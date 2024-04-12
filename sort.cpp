@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <vector>
 #include <chrono>
@@ -16,6 +17,31 @@ void printArr (int* arr, size_t size)
   cout << arr[size - 1] << endl;
 }
 
+void InsertionSort(int* arr, size_t n)
+{
+  for (size_t i = 1; i < n; i++)
+  {
+		int j = i;
+		while (j > 0 && arr[j-1] > arr[j])
+        {
+			swap(arr[j], arr[j-1]);
+			--j;
+		}
+	}
+}
+
+void BubbleSort(int* arr, size_t n)
+{
+  size_t i = 1;
+	while(i <= n){
+		for(size_t j = 0; j < n; j++){
+			if(arr[j]>arr[j+1]){
+				swap(arr[j], arr[j+1]);
+			}
+		}
+		i++;
+	}
+}
 
 void SelectionSort(int* arr, size_t n)
 {
@@ -79,6 +105,10 @@ void MergeSort (int* arr, size_t left, size_t right)
 
 class Heap 
 {
+public:
+    int* Arr;
+    int N;
+    
     Heap()
     {
         Arr = new int[1000];
@@ -339,7 +369,7 @@ int main(int argc, char **argv)
 {
     std::vector<int> v;
     int *arr;
-    size_t size;
+    size_t size = 10000;
     int max = 0;
     bool print = cmdOptionExists(argv, argv+argc, "-print") ||
                  cmdOptionExists(argv, argv+argc, "-p");
@@ -347,11 +377,11 @@ int main(int argc, char **argv)
     bool insert = cmdOptionExists(argv, argv+argc, "-insert") ||
                  cmdOptionExists(argv, argv+argc, "-i");
     bool select = cmdOptionExists(argv, argv+argc, "-select") ||
-                  cmdOptionExists(argv, argv+argc, "-s")
+                  cmdOptionExists(argv, argv+argc, "-s");
     bool bubble = cmdOptionExists(argv, argv+argc, "-bubble") ||
                  cmdOptionExists(argv, argv+argc, "-b");
     bool merge = cmdOptionExists(argv, argv+argc, "-merge") || 
-                 cmdOptionExists(argv, argv+argc, "-m")
+                 cmdOptionExists(argv, argv+argc, "-m");
     bool heap = cmdOptionExists(argv, argv+argc, "-heap") ||
                  cmdOptionExists(argv, argv+argc, "-h");
     bool count = cmdOptionExists(argv, argv+argc, "-count") ||
@@ -391,50 +421,9 @@ int main(int argc, char **argv)
             }
         }
     }
-    if (cmdOptionExists(argv, argv+argc, "-sorted"))
-    {
-        arr = new int[size];
-        for (int i = 0; i < size; i++)
-        {
-            if (max > 1)
-            {
-                arr[i] = (i + 1) % max;
-            }
-            else
-            {
-                arr[i] = i + 1;
-            }
-        }
-    }
-    else if (cmdOptionExists(argv, argv+argc, "-half"))
-    {
-        arr = new int[size];
-        int half = size/2;
-        for (int i = 0; i < half; i++)
-        {
-            arr[i] = i;
-        }
-        for (int i = half; i < size; i++)
-        {
-            arr[i] = size - (i - half);
-        }
-    }
-    else if (cmdOptionExists(argv, argv+argc, "-reverse"))
-    {
-        arr = new int[size];
-        for (int i = 0; i < size; i++)
-        {
-            if (max > 1)
-            {
-                arr[i] = (size - i) % max;
-            }
-            else
-            {
-                arr[i] = size - i;
-            }
-        }
-    }
-    else
+    int si = 0;
+    
+    if (cmdOptionExists(argv, argv+argc, "-custom"))
     {
         std::cout << "Custom Input:\n";
         string s;
@@ -442,12 +431,22 @@ int main(int argc, char **argv)
         stringstream inArr(s);
         vector<int> a;
         int x;
-        while(inArr >> x)
+        while(inArr >> x && si < size)
         {
             v.push_back(x);
+            si++;
         }
         size = v.size();
         arr = &v[0];
+    } else
+    {
+        ifstream file ("input.txt");
+        arr = new int[size];
+        while(file.good() && si < size)
+        {
+            file >> arr[si];
+            si++;
+        }
     }
     
     if (insert)
@@ -455,8 +454,7 @@ int main(int argc, char **argv)
       if (print)
             printArr(arr, size);
         auto start = std::chrono::high_resolution_clock::now();
-        // TODO
-        //insertSort(arr, 0, size - 1, p);
+        InsertionSort(arr, size);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
         std::cout << duration.count() << endl;
@@ -468,7 +466,7 @@ int main(int argc, char **argv)
       if (print)
             printArr(arr, size);
         auto start = std::chrono::high_resolution_clock::now();
-        SelectionSort(arr, size - 1);
+        SelectionSort(arr, size);
         auto stop = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
         std::cout << duration.count() << endl;
@@ -512,7 +510,7 @@ int main(int argc, char **argv)
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop-start);
         std::cout << duration.count() << endl;
         if (print)
-            printArr(arr, size);
+            h.printArray();
     }
     if (count)
     {
